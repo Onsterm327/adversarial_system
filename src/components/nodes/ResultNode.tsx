@@ -78,35 +78,42 @@ export default function ResultNode({ id, data }: NodeProps) {
     setSummary(null)
     setError(null)
 
-    // Build chain from current nodes/edges
+    // Build reverse adjacency: target → [sources] (support multiple parents)
     const allNodes = getNodes()
     const allEdges = getEdges()
 
-    const parentMap = new Map<string, string>()
+    const reverseAdj = new Map<string, string[]>()
     for (const e of allEdges) {
-      parentMap.set(e.target, e.source)
+      if (!reverseAdj.has(e.target)) reverseAdj.set(e.target, [])
+      reverseAdj.get(e.target)!.push(e.source)
     }
 
-    const chain: string[] = []
-    let current: string | undefined = id
-    const visited = new Set<string>()
-    while (current && !visited.has(current)) {
-      visited.add(current)
-      const node = allNodes.find(n => n.id === current)
-      if (node) {
-        chain.unshift(toNodeData(node.data).label)
+    // BFS backwards from result node, collect all connected upstream nodes
+    const collected = new Set<string>()
+    const queue: string[] = [id]
+
+    while (queue.length > 0) {
+      const nodeId = queue.shift()!
+      if (collected.has(nodeId)) continue
+      collected.add(nodeId)
+      for (const parent of (reverseAdj.get(nodeId) || [])) {
+        if (!collected.has(parent)) queue.push(parent)
       }
-      current = parentMap.get(current)
     }
 
-    if (chain.length <= 1) {
+    // Build pipeline — all collected nodes except the result node itself
+    const pipeline: string[] = []
+    for (const nodeId of collected) {
+      if (nodeId === id) continue
+      const node = allNodes.find(n => n.id === nodeId)
+      if (node) pipeline.push(toNodeData(node.data).label)
+    }
+
+    if (pipeline.length === 0) {
       setRunning(false)
       setError('⚠️ 未连接到任何链路')
       return
     }
-
-    // Remove "结果" from the chain
-    const pipeline = chain.slice(0, -1)
 
     const controller = new AbortController()
     abortRef.current = controller
