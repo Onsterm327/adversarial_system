@@ -1,0 +1,85 @@
+/* ============================================================
+   Card Palette — left sidebar
+   ============================================================ */
+
+.card-palette {
+  width: 280px;
+  min-width: 280px;
+  height: 100vh;
+  overflow-y: auto;
+  background: #f8fafc;
+  border-right: 1px solid #e2e8f0;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.palette-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.palette-subtitle {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 0 0 16px 0;
+}
+
+.palette-section {
+  margin-bottom: 16px;
+}
+
+.palette-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+  margin-bottom: 8px;
+  padding-left: 4px;
+}
+
+.palette-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  margin-bottom: 4px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  cursor: grab;
+  transition: box-shadow 0.12s, border-color 0.12s;
+  user-select: none;
+}
+
+.palette-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  border-color: #cbd5e1;
+}
+
+.palette-card:active {
+  cursor: grabbing;
+}
+
+.palette-card .pc-emoji {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.palette-card .pc-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  flex: 1;
+}
+
+.palette-card .pc-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+  padding: 1px 6px;
+  border-radius: 999px;
+  line-height: 1.5;
+}

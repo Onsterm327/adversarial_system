@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(npx vite *)",
+      "Bash(ssh -o StrictHostKeyChecking=accept-new -T git@gitee.com)"
+    ]
+  }
+}
