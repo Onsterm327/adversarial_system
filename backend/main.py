@@ -28,9 +28,9 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 # 配置
 # ---------------------------------------------------------------------------
-SAMPLE_COUNT = 50   # 测试样本数
-BATCH_SIZE = 100     # 批次大小
-DEVICE = "cpu"      # 默认使用 CPU；有 CUDA 时自动切换
+FALLBACK_SAMPLE_COUNT = 1000   # 模拟模式下的默认样本数
+BATCH_SIZE = 100               # 批次大小
+DEVICE = "cpu"                 # 默认使用 CPU；有 CUDA 时自动切换
 
 # ---------------------------------------------------------------------------
 # 卡片 → 内部标识映射
@@ -124,10 +124,13 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
     adversarial_defenses   = [d for d in defense_names if d in {"PGD-AT", "TRADES"}]
     has_active_defense     = "AHD" in defense_names
 
+    # 样本数以数据集实际大小为准，加载失败时用回退值
+    sample_count = FALLBACK_SAMPLE_COUNT
+
     # ---- Step 1: 加载数据集 ----
     yield await send_event({
         "type": "step",
-        "message": f"📊 加载数据集 {dataset_name}（{SAMPLE_COUNT} 个样本）...",
+        "message": f"📊 加载数据集 {dataset_name}...",
         "progress": 5,
     })
     await asyncio.sleep(0.3)
@@ -136,9 +139,10 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
     try:
         from dataset.load_dataset import load_dataset
         test_loader, _ = load_dataset(dataset_key, batchSize=BATCH_SIZE)
+        sample_count = len(test_loader.dataset)
         yield await send_event({
             "type": "step",
-            "message": f"✅ 数据集 {dataset_name} 加载成功",
+            "message": f"✅ 数据集 {dataset_name} 加载成功（{sample_count} 个样本）",
             "progress": 10,
         })
     except Exception as e:
@@ -295,7 +299,7 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
     if test_loader is not None and torch_available and net is not None:
         yield await send_event({
             "type": "step",
-            "message": f"🔬 开始测试（{SAMPLE_COUNT} 样本，{len(attack_names)} 种攻击）...",
+            "message": f"🔬 开始测试（{sample_count} 样本，{len(attack_names)} 种攻击）...",
             "progress": 45,
         })
         await asyncio.sleep(0.3)
@@ -309,7 +313,7 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
             eval_total = 0
 
             for inputs, targets in test_loader:
-                if eval_total >= SAMPLE_COUNT:
+                if eval_total >= sample_count:
                     break
 
                 inputs = inputs.to(device)
@@ -339,12 +343,12 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
                 # 实时计算当前准确率，流式返回
                 live_metrics = {}
                 for atk_name in attack_names:
-                    live_metrics[atk_name] = round(100.0 * metric_correct[atk_name] / eval_total, 1)
+                    live_metrics[atk_name] = round(100.0 * metric_correct[atk_name] / eval_total, 2)
 
-                progress = min(45 + int(50 * eval_total / SAMPLE_COUNT), 93)
+                progress = min(45 + int(50 * eval_total / sample_count), 93)
                 yield await send_event({
                     "type": "metric_update",
-                    "message": f"🔬 测试中... ({min(eval_total, SAMPLE_COUNT)}/{SAMPLE_COUNT})",
+                    "message": f"🔬 测试中... ({min(eval_total, sample_count)}/{sample_count})",
                     "progress": progress,
                     "metrics": live_metrics,
                 })
@@ -353,7 +357,7 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
             # 最终结果
             final_metrics = {}
             for atk_name in attack_names:
-                final_metrics[atk_name] = round(100.0 * metric_correct[atk_name] / eval_total, 1) if eval_total > 0 else 0.0
+                final_metrics[atk_name] = round(100.0 * metric_correct[atk_name] / eval_total, 2) if eval_total > 0 else 0.0
 
             yield await send_event({
                 "type": "result",
@@ -391,7 +395,7 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
     # 构建结果文本
     result_lines = []
     for atk_name, acc in metrics.items():
-        result_lines.append(f"  • {atk_name}: {acc:.1f}%")
+        result_lines.append(f"  • {atk_name}: {acc:.2f}%")
 
     summary_text = (
         f"📊 数据集: {dataset_name} | 模型: {model_name}\n"
@@ -417,7 +421,7 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
             "attacks": attack_names,
             "defenses": defense_names,
             "metrics": metrics,
-            "samples": SAMPLE_COUNT,
+            "samples": sample_count,
         },
     })
 
@@ -456,7 +460,7 @@ def simulate_metrics(dataset_name: str, model_name: str,
 
         base = min(base, 98.0)
         base = max(base, 0.5)
-        metrics[atk_name] = round(base, 1)
+        metrics[atk_name] = round(base, 2)
 
     return metrics
 
