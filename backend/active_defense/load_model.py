@@ -1,7 +1,7 @@
 import torch
-from vgg16 import VGG16
-from resnet import ResNet18
-from wideresnet import WideResNet
+from .vgg16 import VGG16
+from .resnet import ResNet18
+from .wideresnet import WideResNet
 
 def load_model(model, dataset):
     if dataset == "cifar10":

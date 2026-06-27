@@ -1,7 +1,7 @@
 import torch
-from vgg16 import VGG16
-from resnet import ResNet18
-from wideresnet import WideResNet
+from .vgg16 import VGG16
+from .resnet import ResNet18
+from .wideresnet import WideResNet
 
 
 def _get_num_classes(dataset: str) -> int:

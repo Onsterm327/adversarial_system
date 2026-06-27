@@ -246,7 +246,6 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
         try:
             from attack.main import Evaluate
             evaluator = Evaluate(eval_model, num_class=eval_num_classes, custom_attacks=attack_keys)
-            attack_list = evaluator.getList()
         except Exception as e:
             yield await send_event({
                 "type": "step",
@@ -296,7 +295,7 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
     if test_loader is not None and torch_available and net is not None:
         yield await send_event({
             "type": "step",
-            "message": f"🔬 开始测试（{SAMPLE_COUNT} 样本，{len(attack_list)} 种攻击）...",
+            "message": f"🔬 开始测试（{SAMPLE_COUNT} 样本，{len(attack_names)} 种攻击）...",
             "progress": 45,
         })
         await asyncio.sleep(0.3)
@@ -304,7 +303,9 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
         try:
             # 内联推理循环，每批次实时返回当前准确率
             import torch as _torch
-            metric_correct = {atk: 0.0 for atk in attack_list}
+            # 显示名 → 内部名 映射（前端用"Clean"，内部用"NONE"）
+            attack_key_map = dict(zip(attack_names, attack_keys))
+            metric_correct = {atk: 0.0 for atk in attack_names}
             eval_total = 0
 
             for inputs, targets in test_loader:
@@ -314,9 +315,10 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
                 inputs = inputs.to(device)
                 targets = targets.to(device)
 
-                for atk_name in attack_list:
+                for atk_name in attack_names:
                     try:
-                        adv_inputs = evaluator.attack(inputs, targets, atk_name)
+                        internal_key = attack_key_map[atk_name]
+                        adv_inputs = evaluator.attack(inputs, targets, internal_key)
 
                         if purify_fn is not None:
                             try:
@@ -336,7 +338,7 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
 
                 # 实时计算当前准确率，流式返回
                 live_metrics = {}
-                for atk_name in attack_list:
+                for atk_name in attack_names:
                     live_metrics[atk_name] = round(100.0 * metric_correct[atk_name] / eval_total, 1)
 
                 progress = min(45 + int(50 * eval_total / SAMPLE_COUNT), 93)
@@ -350,7 +352,7 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
 
             # 最终结果
             final_metrics = {}
-            for atk_name in attack_list:
+            for atk_name in attack_names:
                 final_metrics[atk_name] = round(100.0 * metric_correct[atk_name] / eval_total, 1) if eval_total > 0 else 0.0
 
             yield await send_event({

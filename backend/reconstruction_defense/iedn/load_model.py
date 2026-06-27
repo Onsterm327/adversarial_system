@@ -1,6 +1,6 @@
 import torch
-from models import Generator
-from PurifyModel import EBMModel, GANModel, GLOWModel, NCSNV2Model, DiffusionModel, CleanModel
+from .models import Generator
+from ..PurifyModel import EBMModel, GANModel, GLOWModel, NCSNV2Model, DiffusionModel, CleanModel
 def load_model(dataset):
     defense_model = Generator().cuda().eval()
 
