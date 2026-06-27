@@ -301,44 +301,69 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
         })
         await asyncio.sleep(0.3)
 
-        # 尝试真实推理
         try:
-            metrics = await run_real_evaluation(
-                test_loader=test_loader,
-                evaluator=evaluator,
-                attack_list=attack_list,
-                eval_model=eval_model,
-                purify_fn=purify_fn,
-                device=device,
-                sample_limit=SAMPLE_COUNT,
-                yield_progress=lambda msg, prog: send_event({
-                    "type": "step", "message": msg, "progress": prog,
-                }),
-            )
+            # 内联推理循环，每批次实时返回当前准确率
+            import torch as _torch
+            metric_correct = {atk: 0.0 for atk in attack_list}
+            eval_total = 0
 
-            # 构建结果文本
-            result_lines = []
-            for atk_name, acc in metrics.items():
-                result_lines.append(f"  • {atk_name}: {acc:.1f}%")
+            for inputs, targets in test_loader:
+                if eval_total >= SAMPLE_COUNT:
+                    break
 
-            summary_text = (
-                f"📊 数据集: {dataset_name} | 模型: {model_name}\n"
-                f"⚔️ 攻击: {', '.join(attack_names)}\n"
-                f"🛡️ 防御: {', '.join(defense_names) if defense_names else '无'}\n\n"
-                f"准确率:\n" + "\n".join(result_lines)
-            )
+                inputs = inputs.to(device)
+                targets = targets.to(device)
+
+                for atk_name in attack_list:
+                    try:
+                        adv_inputs = evaluator.attack(inputs, targets, atk_name)
+
+                        if purify_fn is not None:
+                            try:
+                                adv_inputs = purify_fn.purify(adv_inputs)
+                            except Exception:
+                                pass
+
+                        with _torch.no_grad():
+                            outputs = eval_model(adv_inputs)
+
+                        _, predicted = outputs.max(1)
+                        metric_correct[atk_name] += predicted.eq(targets).sum().item()
+                    except Exception:
+                        pass
+
+                eval_total += inputs.size(0)
+
+                # 实时计算当前准确率，流式返回
+                live_metrics = {}
+                for atk_name in attack_list:
+                    live_metrics[atk_name] = round(100.0 * metric_correct[atk_name] / eval_total, 1)
+
+                progress = min(45 + int(50 * eval_total / SAMPLE_COUNT), 93)
+                yield await send_event({
+                    "type": "metric_update",
+                    "message": f"🔬 测试中... ({min(eval_total, SAMPLE_COUNT)}/{SAMPLE_COUNT})",
+                    "progress": progress,
+                    "metrics": live_metrics,
+                })
+                await asyncio.sleep(0.05)
+
+            # 最终结果
+            final_metrics = {}
+            for atk_name in attack_list:
+                final_metrics[atk_name] = round(100.0 * metric_correct[atk_name] / eval_total, 1) if eval_total > 0 else 0.0
 
             yield await send_event({
                 "type": "result",
-                "message": summary_text,
+                "message": "✅ 执行完成",
                 "progress": 100,
                 "summary": {
                     "dataset": dataset_name,
                     "model": model_name,
                     "attacks": attack_names,
                     "defenses": defense_names,
-                    "metrics": metrics,
-                    "samples": SAMPLE_COUNT,
+                    "metrics": final_metrics,
+                    "samples": eval_total,
                 },
             })
             return
@@ -393,76 +418,6 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
             "samples": SAMPLE_COUNT,
         },
     })
-
-
-# ---------------------------------------------------------------------------
-# 真实评估
-# ---------------------------------------------------------------------------
-async def run_real_evaluation(
-    test_loader,
-    evaluator,
-    attack_list: list,
-    eval_model,
-    purify_fn,
-    device,
-    sample_limit: int,
-    yield_progress,
-) -> dict:
-    """真实运行对抗评估，返回每种攻击的准确率"""
-    import torch
-
-    metric = {atk: 0.0 for atk in attack_list}
-    total = 0
-
-    for inputs, targets in test_loader:
-        if total >= sample_limit:
-            break
-
-        inputs = inputs.to(device)
-        targets = targets.to(device)
-
-        for atk_name in attack_list:
-            try:
-                # 生成对抗样本
-                adv_inputs = evaluator.attack(inputs, targets, atk_name)
-
-                # 输入重构防御：净化对抗样本
-                if purify_fn is not None:
-                    try:
-                        adv_inputs = purify_fn.purify(adv_inputs)
-                    except Exception:
-                        pass  # 净化失败则使用原始对抗样本
-
-                # 推理（eval_model 可能是 net 或 proxy_net，已在上层确定）
-                with torch.no_grad():
-                    outputs = eval_model(adv_inputs)
-
-                _, predicted = outputs.max(1)
-                metric[atk_name] += predicted.eq(targets).sum().item()
-
-            except Exception:
-                # 攻击失败则跳过，metric 保持为 0
-                pass
-
-        total += inputs.size(0)
-
-        # 进度报告
-        progress = min(45 + int(50 * total / sample_limit), 93)
-        yield await yield_progress(
-            f"🔬 测试中... ({total}/{sample_limit})",
-            progress,
-        )
-        await asyncio.sleep(0.05)  # 让出控制权
-
-    # 计算百分比
-    result = {}
-    for atk_name in attack_list:
-        if total > 0:
-            result[atk_name] = round(100.0 * metric[atk_name] / total, 1)
-        else:
-            result[atk_name] = 0.0
-
-    return result
 
 
 # ---------------------------------------------------------------------------

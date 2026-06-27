@@ -3,7 +3,13 @@
     "allow": [
       "Bash(npx tsc *)",
       "Bash(npx vite *)",
-      "Bash(ssh -o StrictHostKeyChecking=accept-new -T git@gitee.com)"
+      "Bash(ssh -o StrictHostKeyChecking=accept-new -T git@gitee.com)",
+      "Bash(git config *)",
+      "Bash(git remote *)",
+      "Bash(git commit -m 'feat: adversarial defense workflow system *)",
+      "Bash(git push *)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'fix: inline evaluation loop, stream per-attack metrics in real-time *)"
     ]
   }
 }

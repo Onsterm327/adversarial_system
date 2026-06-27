@@ -147,10 +147,29 @@ export default function ResultNode({ id, data }: NodeProps) {
 
               if (event.type === 'step') {
                 setProgress({ message: event.message, progress: event.progress })
+              } else if (event.type === 'metric_update') {
+                // 实时更新：每批次返回当前准确率
+                setProgress({ message: event.message, progress: event.progress })
+                const liveSummary = parseSummary({
+                  metrics: event.metrics,
+                  attacks: event.metrics ? Object.keys(event.metrics) : [],
+                  dataset: '',
+                  model: '',
+                  defenses: [],
+                  samples: 0,
+                })
+                if (liveSummary) {
+                  // 保留上次的 pipeline 元信息，只更新 metrics
+                  setSummary(prev => ({
+                    ...(prev ?? { dataset: '', model: '', attacks: liveSummary.attacks, defenses: [], samples: 0 }),
+                    metrics: liveSummary.metrics,
+                    attacks: liveSummary.attacks,
+                  }))
+                }
               } else if (event.type === 'result') {
                 setProgress({ message: '✅ 执行完成', progress: 100 })
 
-                // 解析结构化结果
+                // 解析结构化结果（包含完整 pipeline 元信息）
                 const parsed = parseSummary(event.summary)
                 if (parsed) {
                   setSummary(parsed)
@@ -227,8 +246,8 @@ export default function ResultNode({ id, data }: NodeProps) {
         </div>
       )}
 
-      {/* Structured result display */}
-      {summary && !running && (
+      {/* Structured result display — shows live during execution and final when done */}
+      {summary && (
         <div className="result-metrics-panel">
           {/* Pipeline info bar */}
           <div className="metrics-pipeline-info">
