@@ -351,6 +351,8 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
                     "message": f"🔬 测试中... ({min(eval_total, sample_count)}/{sample_count})",
                     "progress": progress,
                     "metrics": live_metrics,
+                    "samples": eval_total,
+                    "total_samples": sample_count,
                 })
                 await asyncio.sleep(0.05)
 

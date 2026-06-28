@@ -162,20 +162,22 @@ export default function ResultNode({ id, data }: NodeProps) {
               } else if (event.type === 'metric_update') {
                 // 实时更新：每批次返回当前准确率
                 setProgress({ message: event.message, progress: event.progress })
+                const totalSamples = Number(event.total_samples ?? 0)
                 const liveSummary = parseSummary({
                   metrics: event.metrics,
                   attacks: event.metrics ? Object.keys(event.metrics) : [],
                   dataset: '',
                   model: '',
                   defenses: [],
-                  samples: 0,
+                  samples: totalSamples,
                 })
                 if (liveSummary) {
-                  // 保留上次的 pipeline 元信息，只更新 metrics
+                  // 保留上次的 pipeline 元信息，只更新 metrics 和 samples
                   setSummary(prev => ({
-                    ...(prev ?? { dataset: '', model: '', attacks: liveSummary.attacks, defenses: [], samples: 0 }),
+                    ...(prev ?? { dataset: '', model: '', attacks: liveSummary.attacks, defenses: [], samples: totalSamples }),
                     metrics: liveSummary.metrics,
                     attacks: liveSummary.attacks,
+                    samples: totalSamples,
                   }))
                 }
               } else if (event.type === 'result') {
