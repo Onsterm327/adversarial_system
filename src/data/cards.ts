@@ -12,8 +12,8 @@ export const CARDS: CardDef[] = [
   { id: 'wideresnet2810', name: 'WideResNet-28-10', category: 'model', description: '宽度因子 10，深度 28 的 Wide ResNet' },
 
   // ---- Attacks ----
-  { id: 'adaptive_attack',  name: '自适应攻击', category: 'attack', availableAttacks: ['AutoAttack'], description: '自适应集成攻击' },
-  { id: 'adversary_attack', name: '对抗攻击',   category: 'attack', availableAttacks: ['PGD', 'FGSM'], description: '基于梯度的对抗攻击' },
+  { id: 'adaptive_attack',  name: '自适应攻击', category: 'attack', availableAttacks: ['AutoAttack', 'PGD', 'FGSM'], description: '自适应攻击' },
+  { id: 'adversary_attack', name: '对抗攻击',   category: 'attack', availableAttacks: ['AutoAttack', 'PGD', 'FGSM'], description: '对抗攻击' },
 
   // ---- Defenses: Input Reconstruction ----
   { id: 'diffpure', name: 'DiffPure', category: 'defense', defenseSubtype: 'input_reconstruction', description: '扩散模型去噪' },
