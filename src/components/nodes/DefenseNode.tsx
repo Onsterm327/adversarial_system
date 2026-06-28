@@ -31,13 +31,9 @@ export default function DefenseNode({ data }: NodeProps) {
   return (
     <div className="card-node" data-category={nodeData.category}>
       {!isOutputOnly && (
-        <>
-          <Handle type="target" position={Position.Left} isConnectableStart={false} isConnectableEnd={true} />
-          <Handle type="target" position={Position.Top} isConnectableStart={false} isConnectableEnd={true} />
-          <Handle type="target" position={Position.Bottom} isConnectableStart={false} isConnectableEnd={true} />
-        </>
+        <Handle type="target" position={Position.Left} isConnectableStart={false} isConnectableEnd={true} />
       )}
-      <Handle type="source" position={Position.Right} isConnectableStart={true} isConnectableEnd={false} />
+      <Handle type="source" position={Position.Bottom} isConnectableStart={true} isConnectableEnd={false} />
       <div className="card-header">
         <span className="card-emoji">{meta.emoji}</span>
         <span className="card-name">{nodeData.label}</span>
@@ -55,8 +51,8 @@ export default function DefenseNode({ data }: NodeProps) {
       </div>
       <div className="card-desc">
         {isOutputOnly
-          ? '仅输出 — 连接到模型'
-          : '输入重构 — 左/上/下输入，右侧输出'}
+          ? '仅输出 — 底部连接到模型'
+          : '输入重构 — 左侧输入，底部输出'}
       </div>
     </div>
   )
