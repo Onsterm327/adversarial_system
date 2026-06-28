@@ -332,28 +332,6 @@
   animation: result-fade-in 0.25s ease-out;
 }
 
-/* Pipeline info bar */
-.metrics-pipeline-info {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 4px;
-  padding: 6px 8px;
-  border-radius: 6px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  font-size: 10px;
-  font-weight: 600;
-  color: #475569;
-  margin-bottom: 8px;
-  line-height: 1.5;
-}
-
-.metrics-pipeline-info .pipe-arrow {
-  color: #94a3b8;
-  font-size: 10px;
-}
-
 /* Per-attack metric grid */
 .metrics-grid {
   display: flex;

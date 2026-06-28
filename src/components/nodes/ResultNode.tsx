@@ -250,21 +250,6 @@ export default function ResultNode({ id, data }: NodeProps) {
       {/* Structured result display — shows live during execution and final when done */}
       {summary && (
         <div className="result-metrics-panel">
-          {/* Pipeline info bar */}
-          <div className="metrics-pipeline-info">
-            <span>{summary.dataset}</span>
-            <span className="pipe-arrow">→</span>
-            <span>{summary.attacks.join(' / ')}</span>
-            {summary.defenses.length > 0 && (
-              <>
-                <span className="pipe-arrow">→</span>
-                <span>{summary.defenses.join(' / ')}</span>
-              </>
-            )}
-            <span className="pipe-arrow">→</span>
-            <span>{summary.model}</span>
-          </div>
-
           {/* Per-attack accuracy cards */}
           <div className="metrics-grid">
             {summary.attacks.map((atkName) => {
