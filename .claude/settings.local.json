@@ -28,7 +28,8 @@
       "Bash(git commit -m 'refactor: remove category badges from all cards, clean layout *)",
       "Bash(git commit -m 'refactor: unified card layout — category header + colored item tag *)",
       "Bash(git commit -m 'fix: defense header shows subtype label, active defense only from attack *)",
-      "Bash(git commit -m 'fix: active defense connects TO attack, not the other way *)"
+      "Bash(git commit -m 'fix: active defense connects TO attack, not the other way *)",
+      "Bash(git commit -m 'refactor: two attack cards — 自适应攻击\\(AutoAttack\\) and 对抗攻击\\(PGD/FGSM\\) *)"
     ]
   }
 }

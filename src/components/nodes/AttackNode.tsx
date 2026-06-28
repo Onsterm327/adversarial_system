@@ -4,13 +4,13 @@ import type { NodeData } from '../../types'
 import { CATEGORY_META } from '../../types'
 import './CardNode.css'
 
-const AVAILABLE_ATTACKS = ['PGD', 'FGSM', 'AutoAttack']
 const DEFAULT_ATTACKS = ['Clean']
 
 export default function AttackNode({ id, data }: NodeProps) {
   const nodeData = data as unknown as NodeData
   const meta = CATEGORY_META[nodeData.category]
   const attacks: string[] = nodeData.selectedAttacks ?? DEFAULT_ATTACKS
+  const availableAttacks: string[] = nodeData.availableAttacks ?? []
   const [menuOpen, setMenuOpen] = useState(false)
   const { setNodes } = useReactFlow()
   const allNodes = useStore(s => s.nodes)
@@ -46,7 +46,7 @@ export default function AttackNode({ id, data }: NodeProps) {
     [attacks, updateAttacks],
   )
 
-  const availableToAdd = AVAILABLE_ATTACKS.filter(a => !attacks.includes(a))
+  const availableToAdd = availableAttacks.filter(a => !attacks.includes(a))
 
   return (
     <div className="card-node attack-node" data-category={nodeData.category}>

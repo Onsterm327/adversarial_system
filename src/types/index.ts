@@ -17,6 +17,8 @@ export interface CardDef {
   category: CardCategory
   defenseSubtype?: DefenseSubtype
   description: string
+  /** Attack cards: which attacks are available to add */
+  availableAttacks?: string[]
 }
 
 /** Runtime data stored on each React Flow node */
@@ -25,6 +27,8 @@ export interface NodeData {
   label: string
   category: CardCategory
   defenseSubtype?: DefenseSubtype
+  /** Attack nodes: which attacks can be added */
+  availableAttacks?: string[]
   /** Attack nodes: list of selected attack names (e.g. ["Clean", "PGD"]) */
   selectedAttacks?: string[]
   [key: string]: unknown  // satisfy Record<string, unknown> for React Flow

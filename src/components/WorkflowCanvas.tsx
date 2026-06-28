@@ -111,9 +111,10 @@ export default function WorkflowCanvas() {
         category: card.category,
         defenseSubtype: card.defenseSubtype,
       }
-      // Attack nodes start with Clean selected
+      // Attack nodes start with Clean, carry availableAttacks from card def
       if (card.category === 'attack') {
         nodeData.selectedAttacks = ['Clean']
+        nodeData.availableAttacks = card.availableAttacks ?? []
         nodeData.label = 'Clean'
       }
 
