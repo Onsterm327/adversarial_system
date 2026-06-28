@@ -3,19 +3,20 @@ import type { NodeData } from '../types'
 /**
  * New simplified connection rules:
  *
- *   Dataset ──► Attack
- *   Dataset ──► InputReconstruction Defense
- *   Dataset ──► Model
- *   Dataset ──► AdversarialTraining / EnsembleDefense
+ *   Dataset             ──► Attack
+ *   Dataset             ──► InputReconstruction Defense
+ *   Dataset             ──► Model
+ *   Dataset             ──► AdversarialTraining / EnsembleDefense
  *
- *   Attack ──► InputReconstruction Defense
- *   Attack ──► Model
- *   Attack ──► AdversarialTraining / ActiveDefense / EnsembleDefense
+ *   Attack              ──► InputReconstruction Defense
+ *   Attack              ──► Model
+ *   Attack              ──► AdversarialTraining / EnsembleDefense
  *
- *   InputReconstruction Defense ──► Model
- *   AdversarialTraining Defense  ──► Model
- *   ActiveDefense Defense        ──► Model
- *   EnsembleDefense Defense      ──► Model
+ *   ActiveDefense       ──► Attack
+ *
+ *   InputReconstruction ──► Model
+ *   AdversarialTraining ──► Model
+ *   EnsembleDefense     ──► Model
  *
  *   Model ──► (nothing — terminal)
  */
@@ -32,9 +33,11 @@ export function isValidConnection(
 
   // ---- Rules by target category ----
 
-  // 攻击: 只能被数据集连接
+  // 攻击: 可以被数据集和主动防御连接
   if (tgtCat === 'attack') {
-    return srcCat === 'dataset'
+    if (srcCat === 'dataset') return true
+    if (srcCat === 'defense' && srcDef === 'active_defense') return true
+    return false
   }
 
   // 输入重构: 只能被攻击和数据集连接
@@ -42,13 +45,10 @@ export function isValidConnection(
     return srcCat === 'dataset' || srcCat === 'attack'
   }
 
-  // 模型: 可以被数据集、攻击、输入重构、主动防御、集成防御、对抗训练连接
+  // 模型: 可以被数据集、攻击、输入重构、集成防御、对抗训练连接（主动防御除外）
   if (tgtCat === 'model') {
     if (srcCat === 'dataset' || srcCat === 'attack') return true
-    if (srcCat === 'defense') {
-      // All defense types can connect to model
-      return true
-    }
+    if (srcCat === 'defense' && srcDef !== 'active_defense') return true
     return false
   }
 
@@ -57,9 +57,9 @@ export function isValidConnection(
     return srcCat === 'model'
   }
 
-  // 主动防御: 只能被攻击连接
+  // 主动防御: 只能连接到攻击，不接受输入
   if (tgtCat === 'defense' && tgtDef === 'active_defense') {
-    return srcCat === 'attack'
+    return false
   }
 
   // 其他防御（对抗训练、集成防御）: 可以被数据集和攻击连接
@@ -92,8 +92,8 @@ export function getConnectionError(
   }
 
   // Attack as target
-  if (tgtCat === 'attack' && srcCat !== 'dataset') {
-    return '攻击只能被数据集连接'
+  if (tgtCat === 'attack') {
+    return '攻击只能被数据集或主动防御连接'
   }
 
   // InputRecon as target
@@ -103,7 +103,7 @@ export function getConnectionError(
 
   // Model as target
   if (tgtCat === 'model') {
-    return '模型只能被数据集、攻击、输入重构、主动防御、集成防御、对抗训练连接'
+    return '模型只能被数据集、攻击、输入重构、集成防御、对抗训练连接'
   }
 
   // Result as target (srcCat !== 'model' already handled above)
@@ -111,9 +111,9 @@ export function getConnectionError(
     return '结果卡片只能被模型连接'
   }
 
-  // ActiveDefense as target — only attack allowed
+  // ActiveDefense — only outputs, cannot receive connections
   if (tgtCat === 'defense' && tgtDef === 'active_defense') {
-    return '主动防御只能被攻击连接'
+    return '主动防御不接受输入连接，只能连接到攻击卡片'
   }
 
   // Other defenses as target
