@@ -9,10 +9,10 @@ export default function ModelNode({ data }: NodeProps) {
 
   return (
     <div className="card-node" data-category={nodeData.category}>
-      <Handle type="target" position={Position.Left} />
-      <Handle type="target" position={Position.Top} />
-      <Handle type="target" position={Position.Bottom} />
-      <Handle type="source" position={Position.Right} />
+      <Handle type="target" position={Position.Left} isConnectableStart={false} isConnectableEnd={true} />
+      <Handle type="target" position={Position.Top} isConnectableStart={false} isConnectableEnd={true} />
+      <Handle type="target" position={Position.Bottom} isConnectableStart={false} isConnectableEnd={true} />
+      <Handle type="source" position={Position.Right} isConnectableStart={true} isConnectableEnd={false} />
       <div className="card-header">
         <span className="card-emoji">{meta.emoji}</span>
         <span className="card-name">{nodeData.label}</span>

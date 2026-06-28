@@ -12,7 +12,8 @@
       "Bash(git commit -m 'fix: inline evaluation loop, stream per-attack metrics in real-time *)",
       "Bash(git commit -m 'fix: use display attack names as metrics keys, fix relative imports *)",
       "Bash(git commit -m 'fix: accuracy to 2 decimal places, use full dataset size as sample_count *)",
-      "Bash(git commit -m 'fix: support multiple attack/defense nodes connected to same model *)"
+      "Bash(git commit -m 'fix: support multiple attack/defense nodes connected to same model *)",
+      "Bash(git commit -m 'fix: connection handles now properly restrict connect direction *)"
     ]
   }
 }
