@@ -15,7 +15,12 @@
       "Bash(git commit -m 'fix: support multiple attack/defense nodes connected to same model *)",
       "Bash(git commit -m 'fix: connection handles now properly restrict connect direction *)",
       "Bash(git commit -m 'fix: move source handles from Right to Bottom to prevent snap ambiguity *)",
-      "Bash(git commit -m 'refactor: Left=input Right=output only, remove Top/Bottom handles *)"
+      "Bash(git commit -m 'refactor: Left=input Right=output only, remove Top/Bottom handles *)",
+      "Bash(git commit -m 'fix: shift Left target handles 80px right to prioritize left-side snap *)",
+      "Bash(git commit -m 'fix: invisible wide target handle — precise left-side snap, dot stays at edge *)",
+      "Bash(git reset *)",
+      "Bash(python -c ' *)",
+      "Bash(git commit -m 'feat: attack node supports multiple attacks with add/remove UI *)"
     ]
   }
 }

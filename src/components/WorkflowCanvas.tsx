@@ -105,16 +105,23 @@ export default function WorkflowCanvas() {
         y: e.clientY,
       })
 
+      const nodeData: NodeData = {
+        cardId: card.id,
+        label: card.name,
+        category: card.category,
+        defenseSubtype: card.defenseSubtype,
+      }
+      // Attack nodes start with Clean selected
+      if (card.category === 'attack') {
+        nodeData.selectedAttacks = ['Clean']
+        nodeData.label = 'Clean'
+      }
+
       const newNode: Node = {
         id: nextId(),
         type: card.category,
         position,
-        data: {
-          cardId: card.id,
-          label: card.name,
-          category: card.category,
-          defenseSubtype: card.defenseSubtype,
-        } satisfies NodeData,
+        data: nodeData,
       }
 
       setNodes((nds) => [...nds, newNode])

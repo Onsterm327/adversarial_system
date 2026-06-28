@@ -25,6 +25,8 @@ export interface NodeData {
   label: string
   category: CardCategory
   defenseSubtype?: DefenseSubtype
+  /** Attack nodes: list of selected attack names (e.g. ["Clean", "PGD"]) */
+  selectedAttacks?: string[]
   [key: string]: unknown  // satisfy Record<string, unknown> for React Flow
 }
 

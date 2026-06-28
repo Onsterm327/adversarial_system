@@ -101,12 +101,19 @@ export default function ResultNode({ id, data }: NodeProps) {
       }
     }
 
-    // Build pipeline — all collected nodes except the result node itself
+    // Build pipeline — all collected nodes except the result node itself.
+    // Attack nodes expand to their individual selected attacks.
     const pipeline: string[] = []
     for (const nodeId of collected) {
       if (nodeId === id) continue
       const node = allNodes.find(n => n.id === nodeId)
-      if (node) pipeline.push(toNodeData(node.data).label)
+      if (!node) continue
+      const nd = toNodeData(node.data)
+      if (nd.category === 'attack' && nd.selectedAttacks && nd.selectedAttacks.length > 0) {
+        pipeline.push(...nd.selectedAttacks)
+      } else {
+        pipeline.push(nd.label)
+      }
     }
 
     if (pipeline.length === 0) {
