@@ -13,7 +13,6 @@ export default function AttackNode({ id, data }: NodeProps) {
   const attacks: string[] = nodeData.selectedAttacks ?? DEFAULT_ATTACKS
   const [menuOpen, setMenuOpen] = useState(false)
   const { setNodes } = useReactFlow()
-  // Get full node list to properly update
   const allNodes = useStore(s => s.nodes)
 
   const updateAttacks = useCallback(
@@ -41,7 +40,7 @@ export default function AttackNode({ id, data }: NodeProps) {
 
   const removeAttack = useCallback(
     (name: string) => {
-      if (name === 'Clean') return // Clean 不可删除
+      if (name === 'Clean') return
       updateAttacks(attacks.filter(a => a !== name))
     },
     [attacks, updateAttacks],
@@ -54,22 +53,15 @@ export default function AttackNode({ id, data }: NodeProps) {
       <Handle type="target" position={Position.Left} />
       <Handle type="source" position={Position.Right} />
 
-      <div className="card-header">
-        <span className="card-emoji">{meta.emoji}</span>
-        <span className="card-name">测试 ({attacks.length})</span>
-      </div>
-
-      <div className="card-badges">
-        <span className="badge" style={{ background: meta.color }}>{meta.label}</span>
+      <div className="attack-header">
+        <span className="attack-header-emoji">{meta.emoji}</span>
+        <span className="attack-header-name">测试 ({attacks.length})</span>
       </div>
 
       {/* Attack list */}
       <div className="attack-list">
         {attacks.map(name => (
-          <div
-            className={`attack-tag ${name}`}
-            key={name}
-          >
+          <div className={`attack-tag ${name}`} key={name}>
             <span className="attack-tag-name">{name}</span>
             {name !== 'Clean' ? (
               <button
@@ -86,9 +78,9 @@ export default function AttackNode({ id, data }: NodeProps) {
         ))}
       </div>
 
-      {/* Add attack button + dropdown */}
-      <div className="attack-add-row">
-        {availableToAdd.length > 0 ? (
+      {/* Add attack button */}
+      {availableToAdd.length > 0 && (
+        <div className="attack-add-row">
           <div className="attack-add-wrapper">
             <button
               className="attack-add-btn"
@@ -110,10 +102,8 @@ export default function AttackNode({ id, data }: NodeProps) {
               </div>
             )}
           </div>
-        ) : (
-          <span className="attack-full-hint">已添加全部</span>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -22,7 +22,8 @@
       "Bash(python -c ' *)",
       "Bash(git commit -m 'feat: attack node supports multiple attacks with add/remove UI *)",
       "Bash(git commit -m 'fix: vertical attack list layout, rename to 测试 *)",
-      "Bash(git commit -m 'fix: × button right-aligned, attack card width 80% *)"
+      "Bash(git commit -m 'fix: × button right-aligned, attack card width 80% *)",
+      "Bash(git commit -m 'style: distinct yellow-themed attack card design *)"
     ]
   }
 }
