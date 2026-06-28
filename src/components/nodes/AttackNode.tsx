@@ -20,7 +20,7 @@ export default function AttackNode({ id, data }: NodeProps) {
       setNodes(
         allNodes.map(n =>
           n.id === id
-            ? { ...n, data: { ...n.data, selectedAttacks: newAttacks, label: newAttacks.join(' / ') } }
+            ? { ...n, data: { ...n.data, selectedAttacks: newAttacks } }
             : n,
         ),
       )
@@ -55,7 +55,7 @@ export default function AttackNode({ id, data }: NodeProps) {
 
       <div className="attack-header">
         <span className="attack-header-emoji">{meta.emoji}</span>
-        <span className="attack-header-name">测试</span>
+        <span className="attack-header-name">{nodeData.label}</span>
       </div>
 
       {/* Attack list */}

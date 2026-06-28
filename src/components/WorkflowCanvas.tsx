@@ -115,7 +115,6 @@ export default function WorkflowCanvas() {
       if (card.category === 'attack') {
         nodeData.selectedAttacks = ['Clean']
         nodeData.availableAttacks = card.availableAttacks ?? []
-        nodeData.label = 'Clean'
       }
 
       const newNode: Node = {
