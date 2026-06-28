@@ -220,7 +220,7 @@ export default function ResultNode({ id, data }: NodeProps) {
       <Handle type="target" position={Position.Left} />
       <div className="card-header">
         <span className="card-emoji">{meta.emoji}</span>
-        <span className="card-name">{nodeData.label}</span>
+        <span className="card-name">{meta.label}</span>
       </div>
 
       <div className="result-actions">

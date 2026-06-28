@@ -24,7 +24,9 @@
       "Bash(git commit -m 'fix: vertical attack list layout, rename to 测试 *)",
       "Bash(git commit -m 'fix: × button right-aligned, attack card width 80% *)",
       "Bash(git commit -m 'style: distinct yellow-themed attack card design *)",
-      "Bash(git commit -m 'style: remove card descriptions, beautify cards, simplify attack title *)"
+      "Bash(git commit -m 'style: remove card descriptions, beautify cards, simplify attack title *)",
+      "Bash(git commit -m 'refactor: remove category badges from all cards, clean layout *)",
+      "Bash(git commit -m 'refactor: unified card layout — category header + colored item tag *)"
     ]
   }
 }

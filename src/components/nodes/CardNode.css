@@ -92,10 +92,17 @@
   margin-bottom: 4px;
 }
 
-.attack-tag {
+/* Shared tag row for all cards */
+.card-tags {
   display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.card-tag {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
   padding: 3px 10px;
   border-radius: 6px;
   font-size: 12px;
@@ -104,23 +111,25 @@
   line-height: 1.6;
 }
 
-.attack-tag.Clean  { background: #22c55e; }
-.attack-tag.PGD   { background: #ef4444; }
-.attack-tag.FGSM  { background: #f97316; }
-.attack-tag.AutoAttack { background: #8b5cf6; }
+/* Attack tag colors */
+.tag-Clean      { background: #22c55e; }
+.tag-PGD        { background: #ef4444; }
+.tag-FGSM       { background: #f97316; }
+.tag-AutoAttack { background: #8b5cf6; }
 
-.attack-tag-name {
-  white-space: nowrap;
+/* Attack tag: spread name + remove button */
+.tag-attack {
+  justify-content: space-between;
 }
 
-.attack-tag-remove {
-  width: 14px;
-  height: 14px;
+.tag-remove {
+  width: 16px;
+  height: 16px;
   border: none;
   border-radius: 50%;
-  background: rgba(255,255,255,.35);
+  background: rgba(0,0,0,.18);
   color: #fff;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   cursor: pointer;
   display: flex;
@@ -130,17 +139,10 @@
   line-height: 1;
   transition: background 0.12s;
   flex-shrink: 0;
-  margin-left: 6px;
+  margin-left: 8px;
 }
-
-.attack-tag-spacer {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-  margin-left: 6px;
-}
-.attack-tag-remove:hover {
-  background: rgba(255,255,255,.6);
+.tag-remove:hover {
+  background: rgba(0,0,0,.4);
 }
 
 /* Add attack row */

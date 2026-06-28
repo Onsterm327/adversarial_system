@@ -59,20 +59,18 @@ export default function AttackNode({ id, data }: NodeProps) {
       </div>
 
       {/* Attack list */}
-      <div className="attack-list">
+      <div className="card-tags">
         {attacks.map(name => (
-          <div className={`attack-tag ${name}`} key={name}>
-            <span className="attack-tag-name">{name}</span>
-            {name !== 'Clean' ? (
+          <div className={`card-tag tag-attack tag-${name}`} key={name}>
+            <span>{name}</span>
+            {name !== 'Clean' && (
               <button
-                className="attack-tag-remove"
+                className="tag-remove"
                 onClick={() => removeAttack(name)}
                 title={`移除 ${name}`}
               >
                 ×
               </button>
-            ) : (
-              <span className="attack-tag-spacer" />
             )}
           </div>
         ))}
