@@ -48,16 +48,27 @@ function toNodeData(n: Node): NodeData {
   return n.data as unknown as NodeData
 }
 
+/** Edge label per defense subtype */
+const DEFENSE_EDGE_LABELS: Record<string, string> = {
+  input_reconstruction: '清除噪声',
+  adversarial_training: '提高模型固有能力',
+  active_defense:       '欺骗攻击者',
+  ensemble_defense:     '架构稳固',
+}
+
 /** Edge label & color based on source category */
 const EDGE_STYLES: Record<string, { label: string; color: string }> = {
   dataset: { label: '提供数据', color: '#3b82f6' },
   attack:  { label: '生成对抗样本', color: '#ef4444' },
-  defense: { label: '防御处理', color: '#a855f7' },
   model:   { label: '推理', color: '#22c55e' },
 }
 
-function getEdgeStyle(srcCat: string): { label: string; color: string } {
-  return EDGE_STYLES[srcCat] ?? { label: '', color: '#94a3b8' }
+function getEdgeStyle(srcCategory: string, defenseSubtype?: string): { label: string; color: string } {
+  if (srcCategory === 'defense') {
+    const label = defenseSubtype ? DEFENSE_EDGE_LABELS[defenseSubtype] ?? '防御处理' : '防御处理'
+    return { label, color: '#a855f7' }
+  }
+  return EDGE_STYLES[srcCategory] ?? { label: '', color: '#94a3b8' }
 }
 
 export default function WorkflowCanvas() {
@@ -83,8 +94,8 @@ export default function WorkflowCanvas() {
         }
       }
 
-      const srcCat = sourceNode ? toNodeData(sourceNode).category : ''
-      const edgeStyle = getEdgeStyle(srcCat)
+      const srcData = sourceNode ? toNodeData(sourceNode) : null
+      const edgeStyle = getEdgeStyle(srcData?.category ?? '', srcData?.defenseSubtype)
       setEdges((eds) =>
         addEdge(
           {
