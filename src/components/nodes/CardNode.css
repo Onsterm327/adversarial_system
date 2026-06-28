@@ -309,6 +309,41 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+
+/* Defense slider (DWE) */
+.defense-slider-row {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.defense-slider-label {
+  font-size: 11px;
+  color: #475569;
+  font-weight: 600;
+}
+
+.defense-slider {
+  width: 100%;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #e2e8f0;
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+.defense-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #14b8a6;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.15);
+  cursor: pointer;
+}
 /* ---- Per-attack metrics panel ---- */
 
 .result-metrics-panel {

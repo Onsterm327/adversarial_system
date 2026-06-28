@@ -114,6 +114,10 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
     model_name = parsed["model"]
     attack_names = parsed["attacks"]
     defense_names = parsed["defenses"]
+    defense_params = parsed.get("defense_params", {})
+
+    # 提取 DWE 的 atk 参数
+    dwe_atk = defense_params.get("DWE", {}).get("atk", 2) if isinstance(defense_params.get("DWE"), dict) else 2
 
     dataset_key = DATASET_NAME_MAP.get(dataset_name, "cifar10")
     model_key = MODEL_NAME_MAP.get(model_name, "resnet18")
@@ -240,8 +244,11 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
             })
             await asyncio.sleep(0.3)
             try:
+                print("🔗 加载集成防御模型（DWE）...")
                 from ensemble_defense.dwe.load_model import load_model as load_dwe_model
-                ensemble_model = load_dwe_model(model_key, dataset_key)
+                print("🔗 加载集成防御模型1（DWE）...")
+                ensemble_model = load_dwe_model(model_key, dataset_key, basic_model = net, adversarial_defenses = adversarial_defenses)
+                print("🔗 加载集成防御模型2（DWE）...")
                 ensemble_model = ensemble_model.to(device)
                 ensemble_model.eval()
                 yield await send_event({
@@ -270,6 +277,9 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
     # ---- Step 3: 加载攻击器 ----
     if torch_available and net is not None and test_loader is not None:
         # 确定 Evaluate 使用的模型和类别数
+        
+        # 主动防御优先级比集成防御优先级更高
+        # 如果有主动防御，则攻击器优先被主动防御影响
         if has_active_defense and proxy_net is not None:
             eval_num_classes = num_classes + 1
         else:
@@ -284,10 +294,25 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
             "progress": 30,
         })
         await asyncio.sleep(0.3)
+        
+        
+        if has_ensemble_defense and ensemble_model is not None:
+            try:
+                from ensemble_defense.dwe.load_model import MergeModel
+                ensemble_model_list = ensemble_model.model_list
+                attacked_model = MergeModel(ensemble_model_list[:2])  
+            except Exception as e:
+                print(f"⚠️ DWE 模型加载失败: {str(e)[:60]}，跳过集成防御")
 
         try:
             from attack.main import Evaluate
-            evaluator = Evaluate(proxy_net if proxy_net else net, num_class=eval_num_classes, custom_attacks=attack_keys)
+            if has_active_defense and proxy_net is not None:
+                evaluator = Evaluate(proxy_net if proxy_net else net, num_class=eval_num_classes, custom_attacks=attack_keys)
+            elif has_ensemble_defense and attacked_model is not None:
+                evaluator = Evaluate(attacked_model if attacked_model else net, num_class=num_classes, custom_attacks=attack_keys)
+                net = ensemble_model
+            else:
+                evaluator = Evaluate(net, num_class=num_classes, custom_attacks=attack_keys)
         except Exception as e:
             yield await send_event({
                 "type": "step",
@@ -358,7 +383,6 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
                     try:
                         internal_key = attack_key_map[atk_name]
                         adv_inputs = evaluator.attack(inputs, targets, internal_key)
-
                         if purify_fn is not None:
                             try:
                                 adv_inputs = purify_fn.purify(adv_inputs)
@@ -370,7 +394,7 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
 
                         _, predicted = outputs.max(1)
                         metric_correct[atk_name] += predicted.eq(targets).sum().item()
-                    except Exception:
+                    except Exception as e:
                         pass
 
                 eval_total += inputs.size(0)
@@ -510,6 +534,7 @@ async def execute(request: Request):
     """执行对抗防御工作流，SSE 流式返回结果"""
     body = await request.json()
     chain = body.get("chain", [])
+    defense_params = body.get("defense_params", {})
 
     if not chain:
         return StreamingResponse(
@@ -518,6 +543,7 @@ async def execute(request: Request):
         )
 
     parsed = parse_chain(chain)
+    parsed["defense_params"] = defense_params
 
     return StreamingResponse(
         run_pipeline(parsed),

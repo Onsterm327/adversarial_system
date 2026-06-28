@@ -100,6 +100,7 @@ export default function ResultNode({ id, data }: NodeProps) {
     // Build pipeline — all collected nodes except the result node itself.
     // Attack nodes expand to their individual selected attacks.
     const pipeline: string[] = []
+    const defenseParams: Record<string, unknown> = {}
     for (const nodeId of collected) {
       if (nodeId === id) continue
       const node = allNodes.find(n => n.id === nodeId)
@@ -109,6 +110,10 @@ export default function ResultNode({ id, data }: NodeProps) {
         pipeline.push(...nd.selectedAttacks)
       } else {
         pipeline.push(nd.label)
+        // Collect defense params (e.g. DWE atk slider)
+        if (nd.category === 'defense' && nd.defenseParams) {
+          defenseParams[nd.label] = nd.defenseParams
+        }
       }
     }
 
@@ -122,7 +127,7 @@ export default function ResultNode({ id, data }: NodeProps) {
       const response = await fetch(BACKEND_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chain: pipeline }),
+        body: JSON.stringify({ chain: pipeline, defense_params: defenseParams }),
       })
 
       if (!response.ok) {

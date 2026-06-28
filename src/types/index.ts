@@ -31,6 +31,8 @@ export interface NodeData {
   availableAttacks?: string[]
   /** Attack nodes: list of selected attack names (e.g. ["Clean", "PGD"]) */
   selectedAttacks?: string[]
+  /** Defense nodes: additional params (e.g. DWE atk slider value) */
+  defenseParams?: Record<string, unknown>
   [key: string]: unknown  // satisfy Record<string, unknown> for React Flow
 }
 
