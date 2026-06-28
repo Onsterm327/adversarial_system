@@ -1,6 +1,6 @@
 import { Handle, Position, type NodeProps } from '@xyflow/react'
 import type { NodeData } from '../../types'
-import { CATEGORY_META } from '../../types'
+import { CATEGORY_META, DEFENSE_SUBTYPE_LABELS } from '../../types'
 import './CardNode.css'
 
 const DEFENSE_COLORS: Record<string, string> = {
@@ -19,6 +19,9 @@ const OUTPUT_ONLY_SUBTYPES = new Set([
 export default function DefenseNode({ data }: NodeProps) {
   const nodeData = data as unknown as NodeData
   const meta = CATEGORY_META[nodeData.category]
+  const subLabel = nodeData.defenseSubtype
+    ? DEFENSE_SUBTYPE_LABELS[nodeData.defenseSubtype]
+    : meta.label
   const isOutputOnly = nodeData.defenseSubtype
     ? OUTPUT_ONLY_SUBTYPES.has(nodeData.defenseSubtype)
     : false
@@ -34,7 +37,7 @@ export default function DefenseNode({ data }: NodeProps) {
       <Handle type="source" position={Position.Right} />
       <div className="card-header">
         <span className="card-emoji">{meta.emoji}</span>
-        <span className="card-name">{meta.label}</span>
+        <span className="card-name">{subLabel}</span>
       </div>
       <div className="card-tags">
         <span className="card-tag" style={{ background: tagColor }}>{nodeData.label}</span>
