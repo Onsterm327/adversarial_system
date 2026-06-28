@@ -43,22 +43,6 @@
   text-overflow: ellipsis;
 }
 
-.card-node .card-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.card-node .badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 600;
-  color: #fff;
-  line-height: 1.4;
-}
-
 /* Color-coded left border */
 .card-node[data-category="dataset"] { border-left: 4px solid #3b82f6; }
 .card-node[data-category="model"]   { border-left: 4px solid #22c55e; }

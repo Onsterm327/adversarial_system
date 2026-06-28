@@ -222,9 +222,6 @@ export default function ResultNode({ id, data }: NodeProps) {
         <span className="card-emoji">{meta.emoji}</span>
         <span className="card-name">{nodeData.label}</span>
       </div>
-      <div className="card-badges">
-        <span className="badge" style={{ background: meta.color }}>{meta.label}</span>
-      </div>
 
       <div className="result-actions">
         <button
