@@ -18,7 +18,6 @@ export default function ModelNode({ data }: NodeProps) {
       <div className="card-badges">
         <span className="badge" style={{ background: meta.color }}>{meta.label}</span>
       </div>
-      <div className="card-desc">模型节点</div>
     </div>
   )
 }

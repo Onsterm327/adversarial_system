@@ -17,7 +17,6 @@ export default function DatasetNode({ data }: NodeProps) {
       <div className="card-badges">
         <span className="badge" style={{ background: meta.color }}>{meta.label}</span>
       </div>
-      <div className="card-desc">数据集 — 仅输出</div>
     </div>
   )
 }

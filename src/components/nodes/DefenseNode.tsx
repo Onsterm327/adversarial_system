@@ -49,11 +49,6 @@ export default function DefenseNode({ data }: NodeProps) {
           </span>
         )}
       </div>
-      <div className="card-desc">
-        {isOutputOnly
-          ? '仅输出 — 连接到模型'
-          : '输入重构 — 左侧输入，右侧输出'}
-      </div>
     </div>
   )
 }
