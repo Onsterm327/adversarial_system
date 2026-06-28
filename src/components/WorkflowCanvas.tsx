@@ -48,6 +48,18 @@ function toNodeData(n: Node): NodeData {
   return n.data as unknown as NodeData
 }
 
+/** Edge label & color based on source category */
+const EDGE_STYLES: Record<string, { label: string; color: string }> = {
+  dataset: { label: '提供数据', color: '#3b82f6' },
+  attack:  { label: '生成对抗样本', color: '#ef4444' },
+  defense: { label: '防御处理', color: '#a855f7' },
+  model:   { label: '推理', color: '#22c55e' },
+}
+
+function getEdgeStyle(srcCat: string): { label: string; color: string } {
+  return EDGE_STYLES[srcCat] ?? { label: '', color: '#94a3b8' }
+}
+
 export default function WorkflowCanvas() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null)
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
@@ -71,7 +83,23 @@ export default function WorkflowCanvas() {
         }
       }
 
-      setEdges((eds) => addEdge(connection, eds))
+      const srcCat = sourceNode ? toNodeData(sourceNode).category : ''
+      const edgeStyle = getEdgeStyle(srcCat)
+      setEdges((eds) =>
+        addEdge(
+          {
+            ...connection,
+            label: edgeStyle.label,
+            style: { stroke: edgeStyle.color, strokeWidth: 2 },
+            markerEnd: { type: MarkerType.ArrowClosed, color: edgeStyle.color, width: 14, height: 14 },
+            labelStyle: { fill: edgeStyle.color, fontWeight: 700, fontSize: 11 },
+            labelBgStyle: { fill: '#fff', fillOpacity: 0.9 },
+            labelBgPadding: [6, 3] as [number, number],
+            labelBgBorderRadius: 4,
+          },
+          eds,
+        ),
+      )
     },
     [nodes, setEdges],
   )
