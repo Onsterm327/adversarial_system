@@ -258,24 +258,6 @@
   cursor: not-allowed;
 }
 
-.result-conn-btn {
-  flex: 0 0 auto;
-  padding: 6px 10px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  background: #fff;
-  color: #64748b;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.12s;
-}
-
-.result-conn-btn:hover {
-  background: #f1f5f9;
-}
-
 /* Progress bar */
 
 .result-progress {

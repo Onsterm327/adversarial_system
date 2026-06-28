@@ -2,7 +2,6 @@ import { useState, useCallback, useRef } from 'react'
 import { Handle, Position, useReactFlow, type NodeProps } from '@xyflow/react'
 import type { NodeData } from '../../types'
 import { CATEGORY_META } from '../../types'
-import ConnectionPanel from '../ConnectionPanel'
 import './CardNode.css'
 
 const BACKEND_URL = 'http://127.0.0.1:8765/api/execute'
@@ -65,7 +64,6 @@ export default function ResultNode({ id, data }: NodeProps) {
   const nodeData = toNodeData(data)
   const meta = CATEGORY_META[nodeData.category]
   const { getNodes, getEdges } = useReactFlow()
-  const [showPanel, setShowPanel] = useState(false)
   const [running, setRunning] = useState(false)
   const [progress, setProgress] = useState<ProgressInfo | null>(null)
   const [summary, setSummary] = useState<ResultSummary | null>(null)
@@ -231,12 +229,6 @@ export default function ResultNode({ id, data }: NodeProps) {
         >
           {running ? '⏳' : '▶'} 执行
         </button>
-        <button
-          className="result-conn-btn"
-          onClick={() => setShowPanel(true)}
-        >
-          📋 链路
-        </button>
       </div>
 
       {/* Progress bar */}
@@ -317,14 +309,6 @@ export default function ResultNode({ id, data }: NodeProps) {
         <div className="result-output result-error">{error}</div>
       )}
 
-      {/* Connection panel modal */}
-      {showPanel && (
-        <ConnectionPanel
-          nodes={getNodes()}
-          edges={getEdges()}
-          onClose={() => setShowPanel(false)}
-        />
-      )}
     </div>
   )
 }

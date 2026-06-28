@@ -31,7 +31,8 @@
       "Bash(git commit -m 'fix: active defense connects TO attack, not the other way *)",
       "Bash(git commit -m 'refactor: two attack cards — 自适应攻击\\(AutoAttack\\) and 对抗攻击\\(PGD/FGSM\\) *)",
       "Bash(git commit -m 'fix: attack card header shows its own name, label preserved *)",
-      "Bash(git commit -m 'fix: both attack cards can select all attacks *)"
+      "Bash(git commit -m 'fix: both attack cards can select all attacks *)",
+      "Bash(git commit -m 'refactor: remove 链路 button and ConnectionPanel from result card *)"
     ]
   }
 }
