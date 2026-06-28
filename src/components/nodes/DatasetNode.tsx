@@ -9,7 +9,7 @@ export default function DatasetNode({ data }: NodeProps) {
 
   return (
     <div className="card-node" data-category={nodeData.category}>
-      <Handle type="source" position={Position.Bottom} isConnectableStart={true} isConnectableEnd={false} />
+      <Handle type="source" position={Position.Right} />
       <div className="card-header">
         <span className="card-emoji">{meta.emoji}</span>
         <span className="card-name">{nodeData.label}</span>
