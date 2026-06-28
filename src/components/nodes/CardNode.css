@@ -73,7 +73,7 @@
 
 .attack-list {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 4px;
   margin-top: 8px;
 }

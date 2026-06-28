@@ -56,7 +56,7 @@ export default function AttackNode({ id, data }: NodeProps) {
 
       <div className="card-header">
         <span className="card-emoji">{meta.emoji}</span>
-        <span className="card-name">攻击 ({attacks.length})</span>
+        <span className="card-name">测试 ({attacks.length})</span>
       </div>
 
       <div className="card-badges">

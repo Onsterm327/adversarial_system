@@ -20,7 +20,8 @@
       "Bash(git commit -m 'fix: invisible wide target handle — precise left-side snap, dot stays at edge *)",
       "Bash(git reset *)",
       "Bash(python -c ' *)",
-      "Bash(git commit -m 'feat: attack node supports multiple attacks with add/remove UI *)"
+      "Bash(git commit -m 'feat: attack node supports multiple attacks with add/remove UI *)",
+      "Bash(git commit -m 'fix: vertical attack list layout, rename to 测试 *)"
     ]
   }
 }
