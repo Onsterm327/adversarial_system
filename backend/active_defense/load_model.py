@@ -1,4 +1,6 @@
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
 from .vgg16 import VGG16
 from .resnet import ResNet18
 from .wideresnet import WideResNet

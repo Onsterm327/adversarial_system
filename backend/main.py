@@ -123,6 +123,7 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
     input_recon_defenses   = [d for d in defense_names if d in {"DiffPure", "EBM", "IEDN"}]
     adversarial_defenses   = [d for d in defense_names if d in {"PGD-AT", "TRADES"}]
     has_active_defense     = "AHD" in defense_names
+    has_ensemble_defense   = "DWE" in defense_names
 
     # 样本数以数据集实际大小为准，加载失败时用回退值
     sample_count = FALLBACK_SAMPLE_COUNT
@@ -163,7 +164,18 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
 
     net = None
     proxy_net = None
+    ensemble_model = None
     torch_available = False
+
+    # ---- Step 5: 对抗训练防御（训练时防御，推理时不影响） ----
+    if adversarial_defenses:
+        print("📝 对抗训练防御在训练阶段生效: ", adversarial_defenses)
+        yield await send_event({
+            "type": "step",
+            "message": f"📝 对抗训练防御在训练阶段生效: {', '.join(adversarial_defenses)}",
+            "progress": 40,
+        })
+        await asyncio.sleep(0.3)
 
     try:
         import torch
@@ -172,7 +184,7 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
 
         try:
             from models.load_model import load_model
-            net = load_model(model_key, dataset_key)
+            net = load_model(model_key, dataset_key, adversarial_defenses = adversarial_defenses)
             net = net.to(device)
             net.eval()
             yield await send_event({
@@ -202,7 +214,7 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
             await asyncio.sleep(0.3)
             try:
                 from active_defense.load_model import load_model as load_ahd_model
-                proxy_net = load_ahd_model(model_key, dataset_key)
+                proxy_net = load_ahd_model(dataset_key)
                 proxy_net = proxy_net.to(device)
                 proxy_net.eval()
                 yield await send_event({
@@ -217,6 +229,34 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
                     "progress": 28,
                 })
                 has_active_defense = False
+                print(f"⚠️ AHD 模型加载失败: {str(e)[:60]}，跳过主动防御")
+
+        # ---- 集成防御 DWE 加载 ensemble_model ----
+        if has_ensemble_defense:
+            yield await send_event({
+                "type": "step",
+                "message": "🔗 加载集成防御模型（DWE）...",
+                "progress": 30,
+            })
+            await asyncio.sleep(0.3)
+            try:
+                from ensemble_defense.dwe.load_model import load_model as load_dwe_model
+                ensemble_model = load_dwe_model(model_key, dataset_key)
+                ensemble_model = ensemble_model.to(device)
+                ensemble_model.eval()
+                yield await send_event({
+                    "type": "step",
+                    "message": "✅ DWE 集成模型加载成功",
+                    "progress": 33,
+                })
+            except Exception as e:
+                yield await send_event({
+                    "type": "step",
+                    "message": f"⚠️ DWE 模型加载失败: {str(e)[:60]}，跳过集成防御",
+                    "progress": 33,
+                })
+                has_ensemble_defense = False
+                print(f"⚠️ DWE 模型加载失败: {str(e)[:60]}，跳过集成防御")
 
         await asyncio.sleep(0.3)
 
@@ -231,15 +271,13 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
     if torch_available and net is not None and test_loader is not None:
         # 确定 Evaluate 使用的模型和类别数
         if has_active_defense and proxy_net is not None:
-            eval_model = proxy_net
             eval_num_classes = num_classes + 1
         else:
-            eval_model = net
             eval_num_classes = num_classes
 
         # 映射攻击名到内部标识
         attack_keys = [ATTACK_NAME_MAP.get(a, "NONE") for a in attack_names]
-
+        print("attack_keys:", attack_keys)
         yield await send_event({
             "type": "step",
             "message": f"⚔️ 初始化攻击器: {', '.join(attack_keys)}",
@@ -249,7 +287,7 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
 
         try:
             from attack.main import Evaluate
-            evaluator = Evaluate(eval_model, num_class=eval_num_classes, custom_attacks=attack_keys)
+            evaluator = Evaluate(proxy_net if proxy_net else net, num_class=eval_num_classes, custom_attacks=attack_keys)
         except Exception as e:
             yield await send_event({
                 "type": "step",
@@ -260,7 +298,7 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
             test_loader = None  # 触发模拟模式
     else:
         test_loader = None  # 触发模拟模式
-
+    print("评估数量:", eval_num_classes)
     # ---- Step 4: 输入重构防御 ----
     purify_fn = None
     if torch_available and test_loader is not None and input_recon_defenses:
@@ -272,13 +310,17 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
         await asyncio.sleep(0.3)
         # 尝试加载 IEDN（最常用的输入重构防御）
         try:
+            print("try1")
             from reconstruction_defense.iedn.load_model import load_model as load_iedn
+            print("try2")
             purify_fn = load_iedn(dataset_key)
+            print("try3")
             yield await send_event({
                 "type": "step",
                 "message": f"✅ 输入重构防御加载成功",
                 "progress": 38,
             })
+            print("try4")
         except Exception as e:
             yield await send_event({
                 "type": "step",
@@ -286,14 +328,7 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
                 "progress": 38,
             })
 
-    # ---- Step 5: 对抗训练防御（训练时防御，推理时不影响） ----
-    if adversarial_defenses:
-        yield await send_event({
-            "type": "step",
-            "message": f"📝 对抗训练防御在训练阶段生效: {', '.join(adversarial_defenses)}",
-            "progress": 40,
-        })
-        await asyncio.sleep(0.3)
+    
 
     # ---- Step 6: 测试阶段 ----
     if test_loader is not None and torch_available and net is not None:
@@ -331,7 +366,7 @@ async def run_pipeline(parsed: dict) -> AsyncGenerator[str, None]:
                                 pass
 
                         with _torch.no_grad():
-                            outputs = eval_model(adv_inputs)
+                            outputs = net(adv_inputs)
 
                         _, predicted = outputs.max(1)
                         metric_correct[atk_name] += predicted.eq(targets).sum().item()
