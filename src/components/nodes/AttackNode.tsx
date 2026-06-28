@@ -71,7 +71,7 @@ export default function AttackNode({ id, data }: NodeProps) {
             key={name}
           >
             <span className="attack-tag-name">{name}</span>
-            {name !== 'Clean' && (
+            {name !== 'Clean' ? (
               <button
                 className="attack-tag-remove"
                 onClick={() => removeAttack(name)}
@@ -79,6 +79,8 @@ export default function AttackNode({ id, data }: NodeProps) {
               >
                 ×
               </button>
+            ) : (
+              <span className="attack-tag-spacer" />
             )}
           </div>
         ))}

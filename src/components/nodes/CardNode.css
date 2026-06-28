@@ -67,8 +67,8 @@
 /* ---- Attack node: inline attack list ---- */
 
 .attack-node {
-  min-width: 200px;
-  max-width: 280px;
+  min-width: 160px;
+  max-width: 224px;
 }
 
 .attack-list {
@@ -79,9 +79,9 @@
 }
 
 .attack-tag {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: space-between;
   padding: 2px 8px;
   border-radius: 999px;
   font-size: 11px;
@@ -115,6 +115,15 @@
   padding: 0;
   line-height: 1;
   transition: background 0.12s;
+  flex-shrink: 0;
+  margin-left: 6px;
+}
+
+.attack-tag-spacer {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-left: 6px;
 }
 .attack-tag-remove:hover {
   background: rgba(255,255,255,.6);
