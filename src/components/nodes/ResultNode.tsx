@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback } from 'react'
 import { Handle, Position, useReactFlow, type NodeProps } from '@xyflow/react'
 import type { NodeData } from '../../types'
 import { CATEGORY_META } from '../../types'
@@ -68,8 +68,6 @@ export default function ResultNode({ id, data }: NodeProps) {
   const [progress, setProgress] = useState<ProgressInfo | null>(null)
   const [summary, setSummary] = useState<ResultSummary | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const abortRef = useRef<AbortController | null>(null)
-
   const handleExecute = useCallback(async () => {
     setRunning(true)
     setProgress({ message: '🔍 分析连接链路...', progress: 0 })
@@ -120,15 +118,11 @@ export default function ResultNode({ id, data }: NodeProps) {
       return
     }
 
-    const controller = new AbortController()
-    abortRef.current = controller
-
     try {
       const response = await fetch(BACKEND_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ chain: pipeline }),
-        signal: controller.signal,
       })
 
       if (!response.ok) {
@@ -200,20 +194,10 @@ export default function ResultNode({ id, data }: NodeProps) {
         }
       }
     } catch (err: unknown) {
-      if (err instanceof Error && err.name === 'AbortError') {
-        setError('执行已取消')
-      } else {
-        setError(`连接后端失败: ${err instanceof Error ? err.message : String(err)}`)
-      }
+      setError(`连接后端失败: ${err instanceof Error ? err.message : String(err)}`)
       setRunning(false)
     }
   }, [id, getNodes, getEdges])
-
-  const handleCancel = useCallback(() => {
-    abortRef.current?.abort()
-    setRunning(false)
-    setProgress(null)
-  }, [])
 
   return (
     <div className="card-node" data-category={nodeData.category}>
@@ -243,9 +227,6 @@ export default function ResultNode({ id, data }: NodeProps) {
             />
           </div>
           <div className="progress-message">{progress.message}</div>
-          <button className="result-cancel-btn" onClick={handleCancel}>
-            取消
-          </button>
         </div>
       )}
 
